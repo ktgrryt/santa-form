@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>サンタさんへのお願いフォーム</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", Arial, sans-serif; margin: 0; background: #f7f7fb; color: #222; }
+    header { background: #e60012; color: #fff; padding: 16px; display: flex; align-items: center; gap: 12px; }
+    .logo { font-size: 28px; }
+    .title { font-size: 18px; font-weight: 700; }
+    main { max-width: 720px; margin: 24px auto; background: #fff; border-radius: 8px; padding: 20px 20px 8px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    label { display: block; margin-top: 12px; font-weight: 600; }
+    input[type="text"], textarea, select {
+      width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; background: #fafafa;
+    }
+    textarea { min-height: 96px; }
+    .actions { margin-top: 16px; display: flex; gap: 8px; }
+    button {
+      background: #e60012; color: #fff; border: none; padding: 10px 16px; border-radius: 6px;
+      font-size: 14px; cursor: pointer;
+    }
+    button:hover { background: #c40010; }
+    .note { color: #666; font-size: 12px; margin-top: 6px; }
+    footer { text-align: center; color: #888; font-size: 12px; padding: 24px 8px; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo" aria-label="Santa logo">🎅</div>
+  <div class="title">サンタさんへのお願いフォーム</div>
+  <!-- 画像が必要なら以下を利用（TXCに抵触しない自社素材/許諾済み素材のみ）
+  images/santa.png
+  -->
+</header>
+
+<main>
+  <form id="santaForm">
+    <label for="name">お名前（必須）</label>
+    <input id="name" name="name" type="text" required />
+
+    <label for="age">年齢（必須・半角数字推奨）</label>
+    <input id="age" name="age" type="text" inputmode="numeric" pattern="[0-9]*" required />
+
+    <label for="present">欲しいプレゼント</label>
+    <input id="present" name="present" type="text" />
+
+    <label for="address">ご住所（必須）</label>
+    <input id="address" name="address" type="text" required />
+
+    <label for="region">お住まいの地域（必須）</label>
+    <select id="region" name="region" required>
+      <option value="Japan"selected>Japan</option>
+      <option value="US">US</option>
+      <option value="APAC">APAC</option>
+      <option value="EMEA">EMEA</option>
+    </select>
+
+    <label for="msg">サンタさんへのメッセージ</label>
+    <textarea id="msg" name="msg" placeholder="サンタさん、いつもありがとう！"></textarea>
+
+    <div class="actions">
+      <button type="submit">送信</button>
+      <button type="reset">クリア</button>
+    </div>
+  </form>
+</main>
+
+<footer>© Santa Form Sample on Open Liberty</footer>
+
+<script src="./app.js"></script>
+</body>
+</html>
