@@ -6,7 +6,7 @@
 
     const data = {
       name: document.getElementById('name').value.trim(),
-      age: document.getElementById('age').value.trim(),           // サンプルcurl準拠で文字列化
+      age: document.getElementById('age').value.trim(), // サンプルcurl準拠で文字列化
       present: document.getElementById('present').value.trim(),
       address: document.getElementById('address').value.trim(),
       region: document.getElementById('region').value,
@@ -19,25 +19,52 @@
       return;
     }
 
+    const t0 = performance.now();
     try {
-      const res = await fetch('/api/submit', {
+      const res = await fetch('api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json;charset=UTF-8' },
         body: JSON.stringify(data),
       });
 
+      // ▼ ステータスコードから成功/失敗を標準出力（コンソール）へ
+      const { status, statusText } = res;
+      if (res.ok) {
+        console.log(
+          `[SUCCESS] POST api/submit -> ${status} ${statusText || ''}`.trim()
+        );
+      } else {
+        let bodyText = '';
+        try {
+          const ct = res.headers.get('content-type') || '';
+          if (ct.includes('application/json')) {
+            const j = await res.json();
+            bodyText = ` | body: ${JSON.stringify(j)}`;
+          } else {
+            bodyText = ` | body: ${await res.text()}`;
+          }
+        } catch (_) {
+          // ボディ取得に失敗しても無視
+        }
+        console.error(
+          `[FAILURE] POST api/submit -> ${status} ${statusText || ''}${bodyText}`.trim()
+        );
+      }
+
       // 要件：APIの応答は画面上では無視。常に「送信されました」表示
       alert('送信されました');
       form.reset();
-      // （必要なら送信後フォーカスなど調整）
       document.getElementById('name').focus();
     } catch (err) {
-      // 通信エラーでも同一挙動にする場合は下記をコメントアウト
-      // alert('送信に失敗しました。ネットワーク状態をご確認ください。');
+      // ネットワークエラー（CORS/オフライン/タイムアウト等）
+      console.error('[NETWORK ERROR] POST api/submit failed:', err);
 
-      // 要件を厳密に守るなら、失敗でも下記の通り同じメッセージにする：
+      // 要件どおり表示は統一
       alert('送信されました');
       form.reset();
+    } finally {
+      const t1 = performance.now();
+      console.log(`[INFO] api/submit request time: ${(t1 - t0).toFixed(1)} ms`);
     }
   });
 })();
