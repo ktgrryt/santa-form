@@ -18,34 +18,34 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * 地域に応じたエンドポイント/キーで外部APIをコール。
+ * 共通のエンドポイント/キーで外部APIをコール。
  * - microprofile-config.properties から
- *   santa.api.<REGION>.url
- *   santa.api.<REGION>.apiKey
- *   を読み取る（REGIONは Japan / US / APAC / EMEA）
+ *   santa.api.url
+ *   santa.api.apiKey
+ *   を読み取る
  * - 例外があってもフロントには成功を返す（画面は「送信されました」を表示）
  * - PIIはログに出さない/マスクする
  */
+
 @ApplicationScoped
 public class SantaService {
     private static final Logger LOG = Logger.getLogger(SantaService.class.getName());
     private final Config config = ConfigProvider.getConfig();
 
     public void sendToGateway(SantaRequest req) {
-        final String region = normalizeRegion(req.region);
-        final Optional<String> urlOpt = config.getOptionalValue("santa.api." + region + ".url", String.class);
-        final Optional<String> keyOpt = config.getOptionalValue("santa.api." + region + ".apiKey", String.class);
+        final Optional<String> urlOpt = config.getOptionalValue("santa.api.url", String.class);
+        final Optional<String> keyOpt = config.getOptionalValue("santa.api.apiKey", String.class);
 
         if (urlOpt.isEmpty() || keyOpt.isEmpty()) {
-            LOG.warning(() -> "[SantaService] 設定未定義: region=" + region + " / url or apiKey is missing");
-            return; // 設定がなければ何もせず終了（フロントは成功表示方針）
+            LOG.warning(() -> "[SantaService] 設定未定義: santa.api.url または santa.api.apiKey がありません");
+            // 設定がなければ何もせず終了（フロントは成功表示方針）
+            return;
         }
 
         String url = urlOpt.get();
         String apiKey = keyOpt.get();
 
         // 送出するJSON：提供されたサンプルに合わせてフィールド名を維持
-        // （present は任意：API側が無視してもOK）
         var payload = new Payload(req);
 
         try (Client client = ClientBuilder.newClient(); Jsonb jsonb = JsonbBuilder.create()) {
@@ -59,23 +59,12 @@ public class SantaService {
 
             // レスポンスは無視。ただし状態のみログ（詳細本文は記録しない）
             int status = res.getStatus();
-            LOG.info(() -> "[SantaService] API呼出完了: region=" + region + " status=" + status);
+            LOG.info(() -> "[SantaService] API呼出完了: status=" + status);
             res.close();
         } catch (Exception e) {
             // 失敗しても画面は成功表示にする要件のため、ここではログのみ
-            LOG.log(Level.WARNING, "[SantaService] API呼出失敗: region=" + region + " reason=" + e.getMessage(), e);
+            LOG.log(Level.WARNING, "[SantaService] API呼出失敗: reason=" + e.getMessage(), e);
         }
-    }
-
-    private String normalizeRegion(String region) {
-        if (region == null) return "APAC";
-        String r = region.trim().toUpperCase();
-        return switch (r) {
-            case "JAPAN" -> "Japan";
-            case "US" -> "US";
-            case "EMEA" -> "EMEA";
-            default -> "APAC";
-        };
     }
 
     /**
